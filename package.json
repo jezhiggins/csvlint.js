@@ -1,0 +1,22 @@
+{
+  "name": "csvlint",
+  "version": "0.0.0",
+  "description": "A Node package to support validating CSV files to check their syntax and contents. You can either use this package within your own JavaScript code, or as a standalone command line application.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jezhiggins/csvlint.js.git"
+  },
+  "author": "Jez Higgins, Jez UK Ltd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jezhiggins/csvlint.js/issues"
+  },
+  "homepage": "https://github.com/jezhiggins/csvlint.js#readme",
+  "devDependencies": {
+    "mocha": "^7.1.2"
+  }
+}
