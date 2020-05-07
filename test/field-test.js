@@ -81,7 +81,9 @@ describe('Csvlint::Field', () => {
     it('validates ints', () => {
       const field = new CsvlintField('test', { type: 'http://www.w3.org/2001/XMLSchema#int' })
       expect(field.validateColumn('42')).to.eql(true)
+      expect(field.validateColumn('42.1')).to.eql(false)
       expect(field.validateColumn('forty-two')).to.eql(false)
+      expect(field.validateColumn("42 is forty-two")).to.eql(false)
     })
 
     it('validates integers', () => {
@@ -94,7 +96,9 @@ describe('Csvlint::Field', () => {
       const field = new CsvlintField('test', { type: 'http://www.w3.org/2001/XMLSchema#float' })
       expect(field.validateColumn('42.0')).to.eql(true)
       expect(field.validateColumn('42')).to.eql(true)
+      expect(field.validateColumn('42.')).to.eql(false)
       expect(field.validateColumn('forty-two')).to.eql(false)
+      expect(field.validateColumn("42 is forty-two")).to.eql(false)
     })
 
     it('validates URIs', () => {
