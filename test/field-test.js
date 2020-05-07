@@ -66,7 +66,7 @@ describe('Csvlint::Field', () => {
     expect(field.errors[0].type).to.eql('unique')
   })
 
-  describe('it(should validate correct types', () => {
+  describe('validate correct types', () => {
     it('skips empty fields', () => {
       const field = new CsvlintField('test', { type: 'http://www.w3.org/2001/XMLSchema#int' })
       expect(field.validateColumn('')).to.eql(true)
@@ -118,7 +118,7 @@ describe('Csvlint::Field', () => {
       expect(field.validateColumn('derp')).to.eql(false)
     })
 
-    describe('it(should validate all kinds of integers', () => {
+    describe('should validate all kinds of integers', () => {
       it('validates a non-positive integer', () => {
         const field = new CsvlintField('test', { type: 'http://www.w3.org/2001/XMLSchema#nonPositiveInteger' })
         expect(field.validateColumn('0')).to.eql(true)
