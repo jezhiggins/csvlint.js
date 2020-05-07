@@ -21,5 +21,8 @@
     "chai": "^4.2.0",
     "mocha": "^7.1.2",
     "standard": "^14.3.3"
+  },
+  "dependencies": {
+    "luxon": "^1.24.1"
   }
 }
