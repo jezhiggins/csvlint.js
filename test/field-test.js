@@ -8,7 +8,7 @@ describe('Csvlint::Field', () => {
   it('should validate required fields', () => {
     const field = new CsvlintField('test', { required: true })
     expect(field.validateColumn(null)).to.eql(false)
-    expect(field.errors.first.category).to.eql('schema')
+    expect(field.errors[0].category).to.eql('schema')
     expect(field.validateColumn('')).to.eql(false)
     expect(field.validateColumn('data')).to.eql(true)
   })
@@ -16,7 +16,7 @@ describe('Csvlint::Field', () => {
   it('should include the failed constraints', () => {
     const field = new CsvlintField('test', { required: true })
     expect(field.validateColumn(null)).to.eql(false)
-    expect(field.errors.first.constraints).to.eql({ required: true })
+    expect(field.errors[0].constraints).to.eql({ required: true })
   })
 
   it('should validate minimum length', () => {
@@ -49,10 +49,10 @@ describe('Csvlint::Field', () => {
       pattern: '\\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\\}'
     })
     expect(field.validateColumn('abc')).to.eql(false)
-    expect(field.errors.first.constraints).to.eql({ pattern: '\\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\\}' })
+    expect(field.errors[0].constraints).to.eql({ pattern: '\\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\\}' })
 
     expect(field.validateColumn(null)).to.eql(false)
-    expect(field.errors.first.constraints).to.eql({ required: true })
+    expect(field.errors[0].constraints).to.eql({ required: true })
 
     expect(field.validateColumn('{3B0DA29C-C89A-4FAA-918A-0000074FA0E0}')).to.eql(true)
   })
@@ -61,8 +61,8 @@ describe('Csvlint::Field', () => {
     const field = new CsvlintField('test', { unique: true })
     expect(field.validateColumn('abc')).to.eql(true)
     expect(field.validateColumn('abc')).to.eql(false)
-    expect(field.errors.first.category).to.eql('schema')
-    expect(field.errors.first.type).to.eql('unique')
+    expect(field.errors[0].category).to.eql('schema')
+    expect(field.errors[0].type).to.eql('unique')
   })
 
   describe('it(should validate correct types', () => {
@@ -143,7 +143,7 @@ describe('Csvlint::Field', () => {
         const field = new CsvlintField('test', { type: 'http://www.w3.org/2001/XMLSchema#positiveInteger' })
         expect(field.validateColumn('0')).to.eql(false)
         expect(field.validateColumn('-1')).to.eql(false)
-        expect(field.errors.first.constraints).to.eql({ type: 'http://www.w3.org/2001/XMLSchema#positiveInteger' })
+        expect(field.errors[0].constraints).to.eql({ type: 'http://www.w3.org/2001/XMLSchema#positiveInteger' })
         expect(field.validateColumn('1')).to.eql(true)
       })
     })
@@ -156,7 +156,7 @@ describe('Csvlint::Field', () => {
         })
         expect(field.validateColumn('42')).to.eql(true)
         expect(field.validateColumn('39')).to.eql(false)
-        expect(field.errors.first.type).to.eql('below_minimum')
+        expect(field.errors[0].type).to.eql('below_minimum')
       })
 
       it('should enforce maximum values', () => {
@@ -166,7 +166,7 @@ describe('Csvlint::Field', () => {
         })
         expect(field.validateColumn('39')).to.eql(true)
         expect(field.validateColumn('41')).to.eql(false)
-        expect(field.errors.first.type).to.eql('above_maximum')
+        expect(field.errors[0].type).to.eql('above_maximum')
       })
     })
 
@@ -225,7 +225,7 @@ describe('Csvlint::Field', () => {
         expect(field.validateColumn('1999-12-01 10:00:00')).to.eql(true)
         expect(field.validateColumn('invalid-date')).to.eql(false)
         expect(field.validateColumn('2014-02-17')).to.eql(false)
-        expect(field.errors.first.constraints).to.eql({
+        expect(field.errors[0].constraints).to.eql({
           type: 'http://www.w3.org/2001/XMLSchema#dateTime',
           datePattern: '%Y-%m-%d %H:%M:%S'
         })
