@@ -41,6 +41,7 @@ describe('Csvlint::Field', () => {
     const field = new CsvlintField('test', { pattern: '\\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\\}' })
     expect(field.validateColumn('abc')).to.eql(false)
     expect(field.validateColumn('{3B0DA29C-C89A-4FAA-918A-0000074FA0E0}')).to.eql(true)
+
   })
 
   it('should apply combinations of constraints', () => {
