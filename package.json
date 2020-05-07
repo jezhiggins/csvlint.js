@@ -4,7 +4,8 @@
   "description": "A Node package to support validating CSV files to check their syntax and contents. You can either use this package within your own JavaScript code, or as a standalone command line application.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "lint": "standard"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,8 @@
   },
   "homepage": "https://github.com/jezhiggins/csvlint.js#readme",
   "devDependencies": {
-    "mocha": "^7.1.2"
+    "chai": "^4.2.0",
+    "mocha": "^7.1.2",
+    "standard": "^14.3.3"
   }
 }
