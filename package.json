@@ -24,6 +24,7 @@
     "standard": "^14.3.3"
   },
   "dependencies": {
-    "luxon": "^1.24.1"
+    "luxon": "^1.24.1",
+    "node-fetch": "^2.6.0"
   }
 }
