@@ -8,7 +8,7 @@ const CsvlintSchema = require('../lib/csvlint/schema')
 describe('Csvlint::Schema', () => {
   it('should tolerate missing fields', () => {
     const schema = CsvlintSchema.fromJsonTable('http://example.org', {})
-    expect(schema).to.not.be(null)
+    expect(schema).to.not.eql(null)
     expect(schema.fields.length).to.eql(0)
   })
 
@@ -16,7 +16,7 @@ describe('Csvlint::Schema', () => {
     const schema = CsvlintSchema.fromJsonTable('http://example.org', {
       fields: [{ name: 'test' }]
     })
-    expect(schema).to.not.be(null)
+    expect(schema).to.not.eql(null)
     expect(schema.fields[0].name).to.eql('test')
     expect(schema.fields[0].constraints).to.eql({})
   })
@@ -169,7 +169,7 @@ describe('Csvlint::Schema', () => {
     })
 
     it('should create a schema from a JSON Table URL', () => {
-      const schema = CsvlintSchema.load_from_uri('http://example.com/example.json')
+      const schema = CsvlintSchema.loadFromUri('http://example.com/example.json')
       expect(schema.uri).to.eql('http://example.com/example.json')
       expect(schema.fields.length).to.eql(3)
       expect(schema.fields[0].name).to.eql('ID')
@@ -195,7 +195,7 @@ describe('Csvlint::Schema', () => {
     */
     // stub_request(:get, "http://example.com/metadata.json").to_return(:status => 200, :body => @example)
     xit('should create a table group from a CSVW metadata URL', () => {
-      // const schema = CsvlintSchema.load_from_uri("http://example.com/metadata.json")
+      // const schema = CsvlintSchema.loadFromUri("http://example.com/metadata.json")
       // expect(schema.class).to.eql(Csvlint::Csvw::TableGroup)
     })
   })
