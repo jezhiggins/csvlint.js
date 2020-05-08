@@ -46,7 +46,7 @@ describe('Csvlint::Schema', () => {
     expect(minReq.errors[0].type).to.eql('missing_value')
 
     const reqMin = new CsvlintSchema("http://example.org", [required, minimum])
-    expect(minReq.validateRow( ["x", "abc"])).to.eql(true)
+    expect(reqMin.validateRow( ["x", "abc"])).to.eql(true)
     expect(reqMin.validateRow( ["abc"])).to.eql(false)
     expect(reqMin.errors.length).to.eql(1)
     expect(reqMin.errors[0].type).to.eql('min_length')
