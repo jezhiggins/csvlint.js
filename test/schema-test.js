@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 const expect = require('chai').expect
+const nock = require('nock')
 
 const CsvlintField = require('../lib/csvlint/field')
 const CsvlintSchema = require('../lib/csvlint/schema')
@@ -142,16 +143,26 @@ describe('Csvlint::Schema', () => {
   "title": "Schema title",
   "description": "schema",
   "fields": [
-  { "name": "ID", "constraints": { "required": true }, "title": "id", "description": "house identifier" },
-  { "name": "Price", "constraints": { "required": true, "minLength": 1 } },
-  { "name": "Postcode", "constraints": { "required": true, "pattern": "[A-Z]{1,2}[0-9][0-9A-Z]? ?[0-9][A-Z]{2}" } }
-]
+    { 
+      "name": "ID", 
+      "constraints": { "required": true }, 
+      "title": "id", 
+      "description": "house identifier" 
+    },
+    { 
+      "name": "Price", 
+      "constraints": { "required": true, "minLength": 1 } 
+    },
+    { 
+      "name": "Postcode", 
+      "constraints": { "required": true, "pattern": "[A-Z]{1,2}[0-9][0-9A-Z]? ?[0-9][A-Z]{2}" } 
+    }
+  ]
 }
 `
-    /* EOL
-    stub_request(:get, "http://example.com/example.json").to_return(:status => 200, :body => @example)
-    })
-    */
+    nock('http://example.com')
+      .get('/example.json')
+      .reply(200, example)
 
     it('should create a schema from a pre-parsed JSON table', () => {
       const json = JSON.parse(example)
@@ -168,8 +179,8 @@ describe('Csvlint::Schema', () => {
       expect(schema.fields[2].constraints.pattern).to.eql('[A-Z]{1,2}[0-9][0-9A-Z]? ?[0-9][A-Z]{2}')
     })
 
-    it('should create a schema from a JSON Table URL', () => {
-      const schema = CsvlintSchema.loadFromUri('http://example.com/example.json')
+    it('should create a schema from a JSON Table URL', async () => {
+      const schema = await CsvlintSchema.loadFromUri('http://example.com/example.json')
       expect(schema.uri).to.eql('http://example.com/example.json')
       expect(schema.fields.length).to.eql(3)
       expect(schema.fields[0].name).to.eql('ID')
