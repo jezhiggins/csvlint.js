@@ -93,21 +93,19 @@ describe('Csvlint::Schema', () => {
       const required = new CsvlintField("required", { "required": true })
       const schema = new CsvlintSchema("http://example.org", [minimum, required])
 
-      expect(schema.validate_header(["minimum", "required"])).to.eql(true)
+      expect(schema.validateHeader(["minimum", "required"])).to.eql(true)
       expect(schema.warnings.length).to.eql(0)
 
-      expect(schema.validate_header(["wrong", "required"])).to.eql(true)
+      expect(schema.validateHeader(["wrong", "required"])).to.eql(true)
       expect(schema.warnings.length).to.eql(1)
       expect(schema.warnings[0].row).to.eql(1)
       expect(schema.warnings[0].type).to.eql('malformed_header')
       expect(schema.warnings[0].content).to.eql('wrong,required')
       expect(schema.warnings[0].column).to.eql(null)
       expect(schema.warnings[0].category).to.eql('schema')
-      expect(schema.warnings[0].constraints.includes('minimum,required'))
-      // expect(schema.warnings[0].constraints.values).to.eql(['minimum,required'])
-        expect(schema.validate_header(["minimum", "Required"])).to.eql(true)
+      expect(schema.warnings[0].constraints).to.have.property('expectedHeader', 'minimum,required')
+      expect(schema.validateHeader(["minimum", "Required"])).to.eql(true)
       expect(schema.warnings.length).to.eql(1)
-
     })
 
     it('should warn if column count is less than field count', () => {
@@ -115,30 +113,28 @@ describe('Csvlint::Schema', () => {
       const required = new CsvlintField("required", { "required": true })
       const schema = new CsvlintSchema("http://example.org", [minimum, required])
 
-      expect(schema.validate_header(["minimum"])).to.eql(true)
+      expect(schema.validateHeader(["minimum"])).to.eql(true)
       expect(schema.warnings.length).to.eql(1)
       expect(schema.warnings[0].row).to.eql(1)
       expect(schema.warnings[0].type).to.eql('malformed_header')
       expect(schema.warnings[0].content).to.eql("minimum")
       expect(schema.warnings[0].column).to.eql(null)
       expect(schema.warnings[0].category).to.eql('schema')
-      expect(schema.warnings[0].constraints.includes('minimum,required'))
-      // expect(schema.warnings[0].constraints.values).to.eql(['minimum,required'])
+      expect(schema.warnings[0].constraints).to.have.property('expectedHeader', 'minimum,required')
     })
 
     it('should warn if column count is more than field count', () => {
       const minimum = new CsvlintField("minimum", { "minLength": 3 })
       const schema = new CsvlintSchema("http://example.org", [minimum])
 
-      expect(schema.validate_header(["wrong", "required"])).to.eql(true)
+      expect(schema.validateHeader(["wrong", "required"])).to.eql(true)
       expect(schema.warnings.length).to.eql(1)
       expect(schema.warnings[0].row).to.eql(1)
       expect(schema.warnings[0].type).to.eql('malformed_header')
       expect(schema.warnings[0].content).to.eql("wrong,required")
       expect(schema.warnings[0].column).to.eql(null)
       expect(schema.warnings[0].category).to.eql('schema')
-      // expect(schema.warnings[0].constraints.values).to.eql('minimum')
-      expect(schema.warnings[0].constraints.includes('minimum'))
+      expect(schema.warnings[0].constraints).to.have.property('expectedHeader', 'minimum')
     })
   })
 
