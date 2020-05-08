@@ -26,8 +26,8 @@ describe('Csvlint::Validator', () => {
     const validator = new CsvlintValidator("http://example.com/example.csv")
 
     expect(validator.isValid).to.eql(true)
-    expect(validator.expected_columns).to.eql(3)
-    expect(validator.col_counts.count).to.eql(3)
+    expect(validator.expectedColumns_).to.eql(3)
+    expect(validator.colCounts_.length).to.eql(3)
     expect(validator.data.length).to.eql(3)
   })
 
@@ -37,8 +37,8 @@ describe('Csvlint::Validator', () => {
     )
 
     expect(validator.isValid).to.eql(true)
-    expect(validator.expected_columns).to.eql(3)
-    expect(validator.col_counts.count).to.eql(3)
+    expect(validator.expectedColumns_).to.eql(3)
+    expect(validator.colCounts_.length).to.eql(3)
     expect(validator.data.length).to.eql(3)
   })
 
