@@ -15,7 +15,7 @@ describe('Csvlint::Validator', () => {
         404)
   })
 
-  it('should validate from a URL', () => {
+  it('should validate from a URL', async () => {
     nock('http://example.com')
       .get('/example.csv')
       .replyWithFile(
@@ -23,7 +23,7 @@ describe('Csvlint::Validator', () => {
         path.join(__dirname, 'features', 'fixtures', 'valid.csv'),
  {"Content-Type": "text/csv"}
       )
-    const validator = new CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator("http://example.com/example.csv")
 
     expect(validator.isValid).to.eql(true)
     expect(validator.expectedColumns_).to.eql(3)
@@ -42,8 +42,8 @@ describe('Csvlint::Validator', () => {
     expect(validator.data.length).to.eql(3)
   })
 
-  it('should validate from a file path including whitespace', () => {
-    const validator = new CsvlintValidator(
+  it('should validate from a file path including whitespace', async () => {
+    const validator = await CsvlintValidator(
       path.join(__dirname,'features','fixtures','white space in filename.csv')
     )
 
