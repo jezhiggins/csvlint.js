@@ -3,7 +3,7 @@
 const expect = require('chai').expect
 
 const CsvlintField = require('../lib/csvlint/field')
-const CsvlistSchema = require('../lib/csvlint/schema')
+const CsvlintSchema = require('../lib/csvlint/schema')
 
 describe('Csvlint::Schema', () => {
 
