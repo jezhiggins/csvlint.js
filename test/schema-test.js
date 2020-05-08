@@ -27,13 +27,12 @@ describe('Csvlint::Schema', () => {
     const field2 = new CsvlintField("test", { "minLength": 3 })
     const schema = new CsvlintSchema("http://example.org", [field, field2])
 
-    expect(schema.validate_row(["", "x"])).to.eql(false)
+    expect(schema.validateRow(["", "x"])).to.eql(false)
     expect(schema.errors.length).to.eql(2)
     expect(schema.errors[0].type).to.eql('missing_value')
     expect(schema.errors[0].category).to.eql('schema')
     expect(schema.errors[0].column).to.eql(1)
-    expect(schema.validate_row( ["abc", "1234"])).to.eql(true)
-
+    expect(schema.validateRow(["abc", "1234"])).to.eql(true)
   })
 
   it('should include validations for missing columns', () => {
@@ -41,14 +40,14 @@ describe('Csvlint::Schema', () => {
     const required = new CsvlintField("test2", { "required": true })
 
     const minReq = new CsvlintSchema("http://example.org", [minimum, required])
-    expect(minReq.validate_row( ["abc", "x"])).to.eql(true)
-    expect(minReq.validate_row( ["abc"])).to.eql(false)
+    expect(minReq.validateRow( ["abc", "x"])).to.eql(true)
+    expect(minReq.validateRow( ["abc"])).to.eql(false)
     expect(minReq.errors.length).to.eql(1)
     expect(minReq.errors[0].type).to.eql('missing_value')
 
     const reqMin = new CsvlintSchema("http://example.org", [required, minimum])
-    expect(minReq.validate_row( ["x", "abc"])).to.eql(true)
-    expect(reqMin.validate_row( ["abc"])).to.eql(false)
+    expect(minReq.validateRow( ["x", "abc"])).to.eql(true)
+    expect(reqMin.validateRow( ["abc"])).to.eql(false)
     expect(reqMin.errors.length).to.eql(1)
     expect(reqMin.errors[0].type).to.eql('min_length')
   })
@@ -58,7 +57,7 @@ describe('Csvlint::Schema', () => {
     const required = new CsvlintField("test2", { "maxLength": 5 })
     const schema = new CsvlintSchema("http://example.org", [minimum, required])
 
-    expect(schema.validate_row( ["abc"], 1)).to.eql(true)
+    expect(schema.validateRow( ["abc"], 1)).to.eql(true)
     expect(schema.warnings.length).to.eql(1)
     expect(schema.warnings[0].type).to.eql('missing_column')
     expect(schema.warnings[0].category).to.eql('schema')
@@ -74,7 +73,7 @@ describe('Csvlint::Schema', () => {
     const required = new CsvlintField("test2", { "required": true })
     const schema = new CsvlintSchema("http://example.org", [minimum, required])
 
-    expect(schema.validate_row( ["abc", "x", "more", "columns"], 1)).to.eql(true)
+    expect(schema.validateRow( ["abc", "x", "more", "columns"], 1)).to.eql(true)
     expect(schema.warnings.length).to.eql(2)
     expect(schema.warnings[0].type).to.eql('extra_column')
     expect(schema.warnings[0].category).to.eql('schema')
