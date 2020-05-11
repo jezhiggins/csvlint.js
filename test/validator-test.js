@@ -20,31 +20,31 @@ describe('Csvlint::Validator', () => {
       .get('/example.csv')
       .replyWithFile(
         200,
-        path.join(__dirname, 'features', 'fixtures', 'valid.csv'),
+        path.join(__dirname, 'fixtures', 'valid.csv'),
  {"Content-Type": "text/csv"}
       )
     const validator = await CsvlintValidator("http://example.com/example.csv")
 
     expect(validator.isValid).to.eql(true)
+    expect(validator.data.length).to.eql(3)
     expect(validator.expectedColumns_).to.eql(3)
     expect(validator.colCounts_.length).to.eql(3)
-    expect(validator.data.length).to.eql(3)
   })
 
-  it('should validate from a file path', () => {
-    const validator = new CsvlintValidator(
-      path.join(__dirname, '..','features','fixtures','valid.csv')
+  it('should validate from a file path', async () => {
+    const validator = await CsvlintValidator(
+      path.join(__dirname,'fixtures','valid.csv')
     )
 
     expect(validator.isValid).to.eql(true)
+    expect(validator.data.length).to.eql(3)
     expect(validator.expectedColumns_).to.eql(3)
     expect(validator.colCounts_.length).to.eql(3)
-    expect(validator.data.length).to.eql(3)
   })
 
   it('should validate from a file path including whitespace', async () => {
     const validator = await CsvlintValidator(
-      path.join(__dirname,'features','fixtures','white space in filename.csv')
+      path.join(__dirname,'fixtures','white space in filename.csv')
     )
 
     expect(validator.isValid).to.eql(true)
