@@ -66,7 +66,7 @@ describe('Csvlint::Validator', () => {
 
     it('validates a well formed CSV', async () => {
       // when invoking parse contents
-      const data = 'Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1"'
+      const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1"'
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(true)
@@ -79,7 +79,7 @@ describe('Csvlint::Validator', () => {
 
     it('parses malformed CSV and catches unclosed quote', async () => {
       // doesn"t build warnings because check_consistency isn"t invoked
-      const data = 'Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1'
+      const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1'
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(false)
@@ -102,7 +102,7 @@ describe('Csvlint::Validator', () => {
     it('parses malformed CSV and catches whitespace and edge case', async () => {
       // when this data gets passed the header it rescues a whitespace error, resulting in the header row being discarded
       // TODO - check if this is an edge case, currently passing because it requires advice on how to specify
-      const data = ' "Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1" '
+      const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1" '
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(false)
