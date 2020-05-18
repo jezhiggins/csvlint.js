@@ -112,8 +112,10 @@ describe('Csvlint::Validator', () => {
       //expect(validator.errors[0].type).to.eql('whitespace')
       //can't exactly replicate csvlint.rb behaviour here -
       //error is detected, but code is different
-      expect(validator.errors[0].type).to.eql('trailingCharacters')
-      expect(validator.errors.length).to.eql(1)
+      expect(validator.errors.length).to.eql(2)
+      const errorTypes = validator.errors.map(e => e.type)
+      expect(errorTypes).to.contain('trailingCharacters')
+      expect(errorTypes).to.contain('unclosedQuote')
     })
 
     it('handles line breaks within a cell', async () => {
