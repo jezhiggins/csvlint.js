@@ -284,12 +284,11 @@ describe('Csvlint::Validator', () => {
 */
     describe("when validating headers", () => {
       it("should warn if column names aren't unique", async () => {
-        const data = "minimum, minimum\n"
+        const data = "minimum,minimum\n"
         const validator = await CsvlintValidator(data)
 
-        expect( validator.validateHeader(["minimum", "minimum"]) ).to.eql(true)
-        expect( validator.warnings.length).to.eql(1)
-        expect( validator.warnings[0].type).to.eql
+        expect(validator.warnings.length).to.eql(1)
+        expect(validator.warnings[0].type).to.eql
           ('duplicate_column_name')
         expect( validator.warnings[0].category).to.eql('schema')
       })
@@ -298,7 +297,6 @@ describe('Csvlint::Validator', () => {
         const data = "minimum,\n"
         const validator = await CsvlintValidator(data)
 
-        expect(validator.validateHeader(["minimum", ""]) ).to.eql(true)
         expect(validator.warnings.length).to.eql(1)
         expect(validator.warnings[0].type).to.eql('empty_column_name')
         expect(validator.warnings[0].category).to.eql('schema')
