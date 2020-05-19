@@ -161,7 +161,7 @@ describe('Csvlint::Validator', () => {
         expect(validator.expectedColumns_).to.eql(3)
         expect(validator.colCounts_.length).to.eql(4)
         expect(validator.data.length).to.eql(4)
-        expect(validator.info_messages.count).to.eql(1)
+        expect(validator.infoMessages.count).to.eql(1)
       })
 
       it(".each() -> `validate` parses malformed CSV, populates errors, warnings & info_msgs,invokes finish()", () => {
@@ -173,11 +173,11 @@ describe('Csvlint::Validator', () => {
         expect(validator.expectedColumns_).to.eql(3)
         expect(validator.colCounts_.length).to.eql(4)
         expect(validator.data.length).to.eql(5)
-        expect(validator.info_messages.count).to.eql(1)
+        expect(validator.infoMessages.count).to.eql(1)
         expect(validator.errors.length).to.eql(1)
         expect(validator.errors[0].type).to.eql(:whitespace)
         expect(validator.warnings.count).to.eql(1)
-        expect(validator.warnings.first.type).to.eql(:inconsistent_values)
+        expect(validator.warnings[0].type).to.eql(:inconsistent_values)
       })
 
       it("File.open.each_line -> `validate` passes a valid csv", () => {
@@ -186,9 +186,9 @@ describe('Csvlint::Validator', () => {
         const validator = await CsvlintValidator(File.new(file))
 
         expect(validator.isValid).to.eql(true)
-        expect(validator.info_messages.length).to.eql(1)
-        expect(validator.info_messages.first.type).to.eql(:assumed_header)
-        expect(validator.info_messages.first.category).to.eql(:structure)
+        expect(validator.infoMessages.length).to.eql(1)
+        expect(validator.infoMessages[0].type).to.eql(:assumed_header)
+        expect(validator.infoMessages[0].category).to.eql(:structure)
       })
     })
 
@@ -203,8 +203,8 @@ describe('Csvlint::Validator', () => {
         stream = "\"a\",\"b\",\"c\"\n"
         const validator = await CsvlintValidator(StringIO.new(stream), {"header" => false})
         expect(validator.isValid).to.eql(true)
-        expect(validator.info_messages.count).to eq(1)
-        expect(validator.info_messages.first.type).to.eql(:nonrfc_line_breaks)
+        expect(validator.infoMessages.count).to eq(1)
+        expect(validator.infoMessages[0].type).to.eql(:nonrfc_line_breaks)
       })
 
       it("checks for blank rows", () => {
@@ -227,9 +227,9 @@ describe('Csvlint::Validator', () => {
         const validator = await CsvlintValidator(StringIO.new(stream))
 
         expect( validator.isValid ).to.eql(true)
-        expect( validator.info_messages.length ).to.eql(1)
-        expect( validator.info_messages.first.type).to.eql(:assumed_header)
-        expect( validator.info_messages.first.category).to.eql(:structure)
+        expect( validator.infoMessages.length ).to.eql(1)
+        expect( validator.infoMessages[0].type).to.eql(:assumed_header)
+        expect( validator.infoMessages[0].category).to.eql(:structure)
       })
 
       it("should evaluate the row as "row 2" when stipulated", () => {
@@ -237,7 +237,7 @@ describe('Csvlint::Validator', () => {
         const validator = await CsvlintValidator(StringIO.new(stream), "header" => false)
         validator.validate
         expect(validator.isValid).to.eql(true)
-        expect(validator.info_messages.length).to.eql(0)
+        expect(validator.infoMessages.length).to.eql(0)
       })
 
     })
@@ -281,46 +281,48 @@ describe('Csvlint::Validator', () => {
       })
 
     })
-
+*/
     describe("when validating headers", () => {
+      it("should warn if column names aren't unique", async () => {
+        const data = "minimum, minimum\n"
+        const validator = await CsvlintValidator(data)
 
-      it("should warn if column names aren"t unique", () => {
-      data = StringIO.new( "minimum, minimum" )
-      const validator = await CsvlintValidator(data)
-      validator.reset
-      expect( validator.validate_header(["minimum", "minimum"]) ).to.eql(true)
-      expect( validator.warnings.length ).to.eql(1)
-      expect( validator.warnings.first.type).to.eql(:duplicate_column_name)
-      expect( validator.warnings.first.category).to.eql(:schema)
+        expect( validator.validateHeader(["minimum", "minimum"]) ).to.eql(true)
+        expect( validator.warnings.length).to.eql(1)
+        expect( validator.warnings[0].type).to.eql
+          ('duplicate_column_name')
+        expect( validator.warnings[0].category).to.eql('schema')
+      })
+
+      it("should warn if column names are blank", async () => {
+        const data = "minimum,\n"
+        const validator = await CsvlintValidator(data)
+
+        expect(validator.validateHeader(["minimum", ""]) ).to.eql(true)
+        expect(validator.warnings.length).to.eql(1)
+        expect(validator.warnings[0].type).to.eql('empty_column_name')
+        expect(validator.warnings[0].category).to.eql('schema')
+      })
+
+      it("should include info message about missing header when we have assumed a header", async () => {
+        const data = "1,2,3\r\n"
+        const validator = await CsvlintValidator(data)
+
+        expect(validator.isValid).to.eql(true)
+        expect(validator.infoMessages.length).to.eql(1)
+        expect(validator.infoMessages[0].type).to.eql('assumed_header')
+        expect(validator.infoMessages[0].category).to.eql('structure')
+      })
+
+      it("should not include info message about missing header when we are told about the header", async () => {
+        const data = "1,2,3\r\n"
+        const validator = await CsvlintValidator(data, { header: false })
+
+        expect(validator.isValid).to.eql(true)
+        expect(validator.infoMessages.length).to.eql(0)
+      })
     })
-
-    it("should warn if column names are blank", () => {
-      data = StringIO.new( "minimum," )
-      const validator = await CsvlintValidator(data)
-
-      expect( validator.validate_header(["minimum", ""]) ).to.eql(true)
-      expect( validator.warnings.length ).to.eql(1)
-      expect( validator.warnings.first.type).to.eql(:empty_column_name)
-      expect( validator.warnings.first.category).to.eql(:schema)
-    })
-
-    it("should include info message about missing header when we have assumed a header", () => {
-      data = StringIO.new( "1,2,3\r\n" )
-      const validator = await CsvlintValidator(data)
-      expect( validator.isValid ).to.eql(true)
-      expect( validator.info_messages.length ).to.eql(1)
-      expect( validator.info_messages.first.type).to.eql(:assumed_header)
-      expect( validator.info_messages.first.category).to.eql(:structure)
-    })
-
-    it("should not include info message about missing header when we are told about the header", () => {
-      data = StringIO.new( "1,2,3\r\n" )
-      const validator = await CsvlintValidator(data, "header" => false)
-      expect( validator.isValid ).to.eql(true)
-      expect( validator.info_messages.length ).to.eql(0)
-    })
-  })
-
+/*
   describe("build_formats", () => {
 
     {
@@ -338,7 +340,7 @@ describe('Csvlint::Validator', () => {
       validator.build_formats(row)
       formats = validator.instance_variable_get("@formats")
 
-      expect(formats[0].keys.first).to.eql type
+      expect(formats[0].keys[0]).to.eql type
     })
   })
 
@@ -349,8 +351,8 @@ describe('Csvlint::Validator', () => {
     validator.build_formats(row)
     formats = validator.instance_variable_get("@formats")
 
-    expect(formats[0].keys.first).to.eql :numeric
-    expect(formats[1].keys.first).to.eql :numeric
+    expect(formats[0].keys[0]).to.eql :numeric
+    expect(formats[1].keys[0]).to.eql :numeric
   })
 
   it("should ignore blank arrays", () => {
@@ -492,8 +494,8 @@ describe("when detecting headers", () => {
     const validator = await CsvlintValidator("http://example.com/example.csv")
     expect( validator.header? ).to.eql(true)
     expect( validator.errors.length ).to.eql(0)
-    expect( validator.info_messages.length ).to.eql(1)
-    expect( validator.info_messages.first.type).to.eql(:assumed_header)
+    expect( validator.infoMessages.length ).to.eql(1)
+    expect( validator.infoMessages[0].type).to.eql(:assumed_header)
   })
 
   it("give wrong content type error if content type is wrong", () => {
@@ -511,8 +513,8 @@ describe("when validating headers", () => {
   data = StringIO.new( "minimum, minimum" )
   const validator = await CsvlintValidator(data)
   expect( validator.warnings.length ).to.eql(1)
-  expect( validator.warnings.first.type).to.eql(:duplicate_column_name)
-  expect( validator.warnings.first.category).to.eql(:schema)
+  expect( validator.warnings[0].type).to.eql(:duplicate_column_name)
+  expect( validator.warnings[0].category).to.eql(:schema)
 })
 
 it("should warn if column names are blank", () => {
@@ -521,8 +523,8 @@ it("should warn if column names are blank", () => {
 
   expect( validator.validate_header(["minimum", ""]) ).to.eql(true)
   expect( validator.warnings.length ).to.eql(1)
-  expect( validator.warnings.first.type).to.eql(:empty_column_name)
-  expect( validator.warnings.first.category).to.eql(:schema)
+  expect( validator.warnings[0].type).to.eql(:empty_column_name)
+  expect( validator.warnings[0].category).to.eql(:schema)
 })
 
 it("should include info message about missing header when we have assumed a header", () => {
@@ -530,16 +532,16 @@ it("should include info message about missing header when we have assumed a head
   const validator = await CsvlintValidator(data)
 
   expect( validator.isValid ).to.eql(true)
-  expect( validator.info_messages.length ).to.eql(1)
-  expect( validator.info_messages.first.type).to.eql(:assumed_header)
-  expect( validator.info_messages.first.category).to.eql(:structure)
+  expect( validator.infoMessages.length ).to.eql(1)
+  expect( validator.infoMessages[0].type).to.eql(:assumed_header)
+  expect( validator.infoMessages[0].category).to.eql(:structure)
 })
 
 it("should not include info message about missing header when we are told about the header", () => {
   data = StringIO.new( "1,2,3\r\n" )
   const validator = await CsvlintValidator(data, "header"=>false)
   expect( validator.isValid ).to.eql(true)
-  expect( validator.info_messages.length ).to.eql(0)
+  expect( validator.infoMessages.length ).to.eql(0)
 })
 
 it("should not be an error if we have assumed a header, there is no dialect and content-type doesn"t declare header, as we assume header=present", () => {
