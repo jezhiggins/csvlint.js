@@ -8,7 +8,6 @@ const CsvlintValidator = require('../lib/csvlint/validator')
 
 describe('Csvlint::Validator', () => {
   before(() => {
-    nock('http://example.com').get('/example.csv').reply(200, '')
     nock('http://example.com').get('/.well-known/csvm').reply(404)
     nock('http://example.com').get('/example.csv-metadata.json').reply(404)
     nock('http://example.com').get('/csv-metadata.json').reply(404)
@@ -22,6 +21,7 @@ describe('Csvlint::Validator', () => {
         path.join(__dirname, 'fixtures', 'valid.csv'),
         { 'Content-Type': 'text/csv' }
       )
+
     const validator = await CsvlintValidator('http://example.com/example.csv')
 
     expect(validator.isValid).to.eql(true)
@@ -70,8 +70,6 @@ describe('Csvlint::Validator', () => {
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(true)
-      // TODO would be beneficial to know how formats functions WRT to headers - check_format.feature:17 returns 3 rows total
-      // TODO in its formats object but is provided with 5 rows (with one nil row) [uses validation_warnings_steps.rb]
       expect(validator.expectedColumns_).to.eql(3)
       expect(validator.colCounts_.length).to.eql(4)
       expect(validator.data.length).to.eql(4)
@@ -88,30 +86,25 @@ describe('Csvlint::Validator', () => {
     })
 
     it('parses malformed CSV and catches stray quote', async () => {
-      // cannot make Ruby generate a stray quote error
-      // doesn"t build warnings because check_consistency isn"t invoked
-      // TODO below is trailing whitespace but is interpreted as a stray quote
       const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1""'
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(false)
       //expect(validator.errors[0].type).to.eql('stray_quote')
       //can't exactly replicate csvlint.rb behaviour here -
-      //error is detected, but code is different
+      //error is detected, but error code is different
       expect(validator.errors[0].type).to.eql('unclosedQuote')
       expect(validator.errors.length).to.eql(1)
     })
 
     it('parses malformed CSV and catches whitespace and edge case', async () => {
-      // when this data gets passed the header it rescues a whitespace error, resulting in the header row being discarded
-      // TODO - check if this is an edge case, currently passing because it requires advice on how to specify
       const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1" '
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(false)
       //expect(validator.errors[0].type).to.eql('whitespace')
       //can't exactly replicate csvlint.rb behaviour here -
-      //error is detected, but code is different
+      //error is detected, but error code is different
       expect(validator.errors.length).to.eql(2)
       const errorTypes = validator.errors.map(e => e.type)
       expect(errorTypes).to.contain('trailingCharacters')
@@ -130,8 +123,8 @@ describe('Csvlint::Validator', () => {
       expect(validator.isValid).to.eql(true)
     })
   })
-  /*
 
+  /*
     describe("csv dialect", () => {
       it("should provide sensible defaults for CSV parsing", () => {
         const validator = await CsvlintValidator("http://example.com/example.csv")
@@ -197,11 +190,9 @@ describe('Csvlint::Validator', () => {
         expect(validator.info_messages.first.type).to.eql(:assumed_header)
         expect(validator.info_messages.first.category).to.eql(:structure)
       })
-
     })
 
     describe("with a single row", () => {
-
       it("validates correctly", () => {
         stream = "\"a\",\"b\",\"c\"\r\n"
         const validator = await CsvlintValidator(StringIO.new(stream), "header" => false)
@@ -472,12 +463,12 @@ describe("when detecting headers", () => {
   it("should look in CSV options to detect header", () => {
     opts = {
       "header" => true
-  }
+    }
     const validator = await CsvlintValidator("http://example.com/example.csv", opts)
     expect( validator.header? ).to.eql(true)
     opts = {
       "header" => false
-  }
+    }
     const validator = await CsvlintValidator("http://example.com/example.csv", opts)
     expect( validator.header? ).to.eql(false)
   })
@@ -613,34 +604,37 @@ it("should limit number of lines read", () => {
   stub_request(:get, "http://example.com/example.csv").to_return(:status => 200,
 :headers=>{"Content-Type" => "text/csv; header=present"},
 :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-  const validator = await CsvlintValidator("http://example.com/example.csv", {}, nil, limit_lines: 2)
+  const validator = await CsvlintValidator("http://example.com/example.csv", {}, null, limit_lines: 2)
   expect( validator.isValid ).to.eql(true)
   data = validator.data
   expect( data.count ).to.eql 2
   expect( data[0] ).to.eql ["Foo","Bar","Baz"]
 })
 
+*/
+
 describe("with a lambda", () => {
+  it("should call a lambda for each line", async () => {
+    let count = 0
+    const lambda = row => ++count
+    await CsvlintValidator(path.join(__dirname,"fixtures","valid.csv"), {}, null, { lambda })
 
-  it("should call a lambda for each line", () => {
-  @count = 0
-    mylambda = lambda { |row| @count = @count + 1 }
-    const validator = await CsvlintValidator(File.new(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")), {}, nil, { lambda: mylambda })
-    expect(@count).to eq(3)
+    expect(count).to.eql(3)
   })
 
-  it("reports back the status of each line", () => {
-  @results = []
-    mylambda = lambda { |row| @results << row.current_line }
-    const validator = await CsvlintValidator(File.new(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")), {}, nil, { lambda: mylambda })
-    expect(@results.count).to eq(3)
-    expect(@results[0]).to eq(1)
-    expect(@results[1]).to eq(2)
-    expect(@results[2]).to eq(3)
-  })
+  it("reports back the status of each line", async () => {
+    const results = []
+    const lambda = (row, currentLine) => results.push(currentLine)
+    await CsvlintValidator(path.join(__dirname,"fixtures","valid.csv"), {}, null, { lambda })
 
+    expect(results.length).to.eql(3)
+    expect(results[0]).to.eql(1)
+    expect(results[1]).to.eql(2)
+    expect(results[2]).to.eql(3)
+  })
 })
 
+  /*
 // Commented out because there is currently no way to mock redirects with Typhoeus and WebMock - see https://github.com/bblimke/webmock/issues/237
 // it("should follow redirects to SSL", () => {
 //   stub_request(:get, "http://example.com/redirect").to_return(:status => 301, :headers=>{"Location" => "https://example.com/example.csv"})
