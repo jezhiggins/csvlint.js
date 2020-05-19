@@ -6,23 +6,30 @@ const path = require('path')
 
 const CsvlintValidator = require('../lib/csvlint/validator')
 
+const exampleUrlHost = 'http://example.com'
+const exampleUrlPath = '/example.csv'
+const exampleUrl = `${exampleUrlHost}${exampleUrlPath}`
+
+function stubUrl () {
+  nock(exampleUrlHost)
+    .get(exampleUrlPath)
+    .replyWithFile(
+      200,
+      path.join(__dirname, 'fixtures', 'valid.csv'),
+      { 'Content-Type': 'text/csv' }
+    )
+}
+
 describe('Csvlint::Validator', () => {
   before(() => {
-    nock('http://example.com').get('/.well-known/csvm').reply(404)
-    nock('http://example.com').get('/example.csv-metadata.json').reply(404)
-    nock('http://example.com').get('/csv-metadata.json').reply(404)
+    nock(exampleUrlHost).get('/.well-known/csvm').reply(404)
+    nock(exampleUrlHost).get('/example.csv-metadata.json').reply(404)
+    nock(exampleUrlHost).get('/csv-metadata.json').reply(404)
   })
 
   it('should validate from a URL', async () => {
-    nock('http://example.com')
-      .get('/example.csv')
-      .replyWithFile(
-        200,
-        path.join(__dirname, 'fixtures', 'valid.csv'),
-        { 'Content-Type': 'text/csv' }
-      )
-
-    const validator = await CsvlintValidator('http://example.com/example.csv')
+    stubUrl()
+    const validator = await CsvlintValidator(exampleUrl)
 
     expect(validator.isValid).to.eql(true)
     expect(validator.data.length).to.eql(3)
@@ -124,74 +131,75 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  /*
-    describe("csv dialect", () => {
-      it("should provide sensible defaults for CSV parsing", () => {
-        const validator = await CsvlintValidator("http://example.com/example.csv")
-        opts = validator.instance_variable_get("@csv_options")
-        expect(opts).to include({
-      :col_sep => ",",
-      :row_sep => :auto,
-      :quote_char => """,
-      :skip_blanks => false
-      })
-      })
+  describe("csv dialect", () => {
+    it("should provide sensible defaults for CSV parsing", async () => {
+      stubUrl()
+      const validator = await CsvlintValidator(exampleUrl)
 
-      it("should map CSV DDF to correct values", () => {
-        const validator = await CsvlintValidator("http://example.com/example.csv")
-        opts = validator.dialect_to_csv_options( {
-          "lineTerminator" => "\n",
-          "delimiter" => "\t",
-          "quoteChar" => """
-      })
-        expect(opts).to.include({
-      col_sep: "\t",
-      row_sep: "\n",
-      quote_char: """,
-      skip_blanks: false
-      })
-      })
-
-      it(".each() -> `validate` to pass input in streaming fashion", () => {
-        // warnings are built when validate is used to call all three methods
-        data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1"})
-        const validator = await CsvlintValidator(data)
-
-        expect(validator.isValid).to.eql(true)
-        expect(validator.expectedColumns_).to.eql(3)
-        expect(validator.colCounts_.length).to.eql(4)
-        expect(validator.data.length).to.eql(4)
-        expect(validator.infoMessages.count).to.eql(1)
-      })
-
-      it(".each() -> `validate` parses malformed CSV, populates errors, warnings & info_msgs,invokes finish()", () => {
-        data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"1","two","3"\r\n"3","2",   "1"})
-
-        const validator = await CsvlintValidator(data)
-
-        expect(validator.isValid).to.eql(false)
-        expect(validator.expectedColumns_).to.eql(3)
-        expect(validator.colCounts_.length).to.eql(4)
-        expect(validator.data.length).to.eql(5)
-        expect(validator.infoMessages.count).to.eql(1)
-        expect(validator.errors.length).to.eql(1)
-        expect(validator.errors[0].type).to.eql(:whitespace)
-        expect(validator.warnings.count).to.eql(1)
-        expect(validator.warnings[0].type).to.eql(:inconsistent_values)
-      })
-
-      it("File.open.each_line -> `validate` passes a valid csv", () => {
-        filename = "valid_many_rows.csv"
-        file = File.join(File.expand_path(Dir.pwd), "features", "fixtures", filename)
-        const validator = await CsvlintValidator(File.new(file))
-
-        expect(validator.isValid).to.eql(true)
-        expect(validator.infoMessages.length).to.eql(1)
-        expect(validator.infoMessages[0].type).to.eql(:assumed_header)
-        expect(validator.infoMessages[0].category).to.eql(:structure)
+      const opts = validator.csvOptions
+      expect(opts).to.include({
+        col_sep: ',',
+        row_sep: 'auto',
+        quote_char: '"',
+        skip_blanks: false
       })
     })
 
+    it("should map CSV DDF to correct values", async () => {
+      stubUrl()
+      const validator = await CsvlintValidator(exampleUrl)
+
+      const opts = validator.dialectToCsvOptions({
+        lineTerminator: '\n',
+        delimiter: '\t',
+        quoteChar: '"'
+      })
+      expect(opts).to.include({
+        col_sep: "\t",
+        row_sep: "\n",
+        quote_char: '"',
+        skip_blanks: false
+      })
+    })
+
+    it("`validate` to pass input in streaming fashion", async () => {
+      // warnings are built when validate is used to call all three methods
+      const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1"'
+      const validator = await CsvlintValidator(data)
+
+      expect(validator.isValid).to.eql(true)
+      expect(validator.expectedColumns_).to.eql(3)
+      expect(validator.colCounts_.length).to.eql(4)
+      expect(validator.data.length).to.eql(4)
+      expect(validator.infoMessages.length).to.eql(1)
+    })
+
+    it("`validate` parses malformed CSV, populates errors, warnings & info_msgs,invokes finish()", async () => {
+      const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"1","two","3"\r\n"3","2",   "1"'
+      const validator = await CsvlintValidator(data)
+
+      expect(validator.isValid).to.eql(false)
+      expect(validator.expectedColumns_).to.eql(3)
+      expect(validator.colCounts_.length).to.eql(4)
+      expect(validator.data.length).to.eql(5)
+      expect(validator.infoMessages.length).to.eql(1)
+      expect(validator.errors.length).to.eql(1)
+      expect(validator.errors[0].type).to.eql('invalidOpeningQuote') // .rb has whitespace
+      expect(validator.warnings.length).to.eql(1)
+      expect(validator.warnings[0].type).to.eql('inconsistent_values')
+    })
+
+    it('`validate` passes a valid csv', async () => {
+      const filename = path.join(__dirname, "fixtures", "valid_many_rows.csv")
+      const validator = await CsvlintValidator(filename)
+
+      expect(validator.isValid).to.eql(true)
+      expect(validator.infoMessages.length).to.eql(1)
+      expect(validator.infoMessages[0].type).to.eql('assumed_header')
+      expect(validator.infoMessages[0].category).to.eql('structure')
+    })
+  })
+/*
     describe("with a single row", () => {
       it("validates correctly", () => {
         stream = "\"a\",\"b\",\"c\"\r\n"
@@ -203,7 +211,7 @@ describe('Csvlint::Validator', () => {
         stream = "\"a\",\"b\",\"c\"\n"
         const validator = await CsvlintValidator(StringIO.new(stream), {"header" => false})
         expect(validator.isValid).to.eql(true)
-        expect(validator.infoMessages.count).to eq(1)
+        expect(validator.infoMessages.length).to eq(1)
         expect(validator.infoMessages[0].type).to.eql(:nonrfc_line_breaks)
       })
 
@@ -334,7 +342,7 @@ describe('Csvlint::Validator', () => {
     it("should return the format of #{type} correctly", () => {
       row = [content]
 
-      const validator = await CsvlintValidator("http://example.com/example.csv")
+      const validator = await CsvlintValidator(exampleUrl)
       validator.build_formats(row)
       formats = validator.instance_variable_get("@formats")
 
@@ -345,7 +353,7 @@ describe('Csvlint::Validator', () => {
   it("treats floats and ints the same", () => {
     row = ["12", "3.1476"]
 
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator(exampleUrl)
     validator.build_formats(row)
     formats = validator.instance_variable_get("@formats")
 
@@ -356,7 +364,7 @@ describe('Csvlint::Validator', () => {
   it("should ignore blank arrays", () => {
     row = []
 
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator(exampleUrl)
     validator.build_formats(row)
 
     formats = validator.instance_variable_get("@formats")
@@ -370,7 +378,7 @@ describe('Csvlint::Validator', () => {
       ["baz"]
     ]
 
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator(exampleUrl)
 
     rows.each_with_index do |row, i|
     validator.build_formats(row)
@@ -386,7 +394,7 @@ it("should return formats correctly if a row is blank", () => {
     ["foo", "1", "$2345"]
   ]
 
-  const validator = await CsvlintValidator("http://example.com/example.csv")
+  const validator = await CsvlintValidator(exampleUrl)
 
   rows.each_with_index do |row, i|
   validator.build_formats(row)
@@ -405,9 +413,9 @@ expect(formats).to.eql [
 
 describe("csv dialect", () => {
   it("should provide sensible defaults for CSV parsing", () => {
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator(exampleUrl)
     opts = validator.instance_variable_get("@csv_options")
-    expect(opts).to include({
+    expect(opts).to.include({
   :col_sep => ",",
   :row_sep => :auto,
   :quote_char => """,
@@ -416,13 +424,13 @@ describe("csv dialect", () => {
   })
 
   it("should map CSV DDF to correct values", () => {
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator(exampleUrl)
     opts = validator.dialect_to_csv_options({
       "lineTerminator" => "\n",
       "delimiter" => "\t",
       "quoteChar" => """
   })
-    expect(opts).to include({
+    expect(opts).to.include({
   :col_sep => "\t",
   :row_sep => "\n",
   :quote_char => """,
@@ -441,14 +449,14 @@ describe("check_consistency", () => {
     {:numeric => 3},
   ]
 
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator(exampleUrl)
     validator.instance_variable_set("@formats", formats)
     validator.check_consistency
 
     warnings = validator.instance_variable_get("@warnings")
     warnings.delete_if { |h| h.type != :inconsistent_values }
 
-    expect(warnings.count).to.eql 1
+    expect(warnings.length).to.eql 1
   })
 
 })
@@ -456,7 +464,7 @@ describe("check_consistency", () => {
 #TODO the below tests are all the remaining tests from validator_spec.rb, annotations indicate their status HOWEVER these tests may be best refactored into client specs
 describe("when detecting headers", () => {
   it("should default to expecting a header", () => {
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    const validator = await CsvlintValidator(exampleUrl)
     expect( validator.header? ).to.eql(true)
   })
 
@@ -464,32 +472,32 @@ describe("when detecting headers", () => {
     opts = {
       "header" => true
     }
-    const validator = await CsvlintValidator("http://example.com/example.csv", opts)
+    const validator = await CsvlintValidator(exampleUrl, opts)
     expect( validator.header? ).to.eql(true)
     opts = {
       "header" => false
     }
-    const validator = await CsvlintValidator("http://example.com/example.csv", opts)
+    const validator = await CsvlintValidator(exampleUrl, opts)
     expect( validator.header? ).to.eql(false)
   })
 
   it("should look in content-type for header=absent", () => {
-    stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv; header=absent"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/csv; header=absent"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+    const validator = await CsvlintValidator(exampleUrl)
     expect( validator.header? ).to.eql(false)
     expect( validator.errors.length ).to.eql(0)
   })
 
   it("should look in content-type for header=present", () => {
-    stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv; header=present"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/csv; header=present"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+    const validator = await CsvlintValidator(exampleUrl)
     expect( validator.header? ).to.eql(true)
     expect( validator.errors.length ).to.eql(0)
   })
 
   it("assume header present if not specified in content type", () => {
-    stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+    const validator = await CsvlintValidator(exampleUrl)
     expect( validator.header? ).to.eql(true)
     expect( validator.errors.length ).to.eql(0)
     expect( validator.infoMessages.length ).to.eql(1)
@@ -497,8 +505,8 @@ describe("when detecting headers", () => {
   })
 
   it("give wrong content type error if content type is wrong", () => {
-    stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/html"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-    const validator = await CsvlintValidator("http://example.com/example.csv")
+    stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/html"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+    const validator = await CsvlintValidator(exampleUrl)
     expect( validator.header? ).to.eql(true)
     expect( validator.errors.length ).to.eql(1)
     expect( validator.errors[0].type).to.eql(:wrong_content_type)
@@ -543,23 +551,23 @@ it("should not include info message about missing header when we are told about 
 })
 
 it("should not be an error if we have assumed a header, there is no dialect and content-type doesn"t declare header, as we assume header=present", () => {
-stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-const validator = await CsvlintValidator("http://example.com/example.csv")
+stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+const validator = await CsvlintValidator(exampleUrl)
 expect( validator.isValid ).to.eql(true)
 })
 
 it("should be valid if we have a dialect and the data is from the web", () => {
-  stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+  stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
   #header defaults to true in csv dialect, so this is valid
-  const validator = await CsvlintValidator("http://example.com/example.csv", {})
+  const validator = await CsvlintValidator(exampleUrl, {})
   expect( validator.isValid ).to.eql(true)
 
-  stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-  const validator = await CsvlintValidator("http://example.com/example.csv", {"header"=>true})
+  stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+  const validator = await CsvlintValidator(exampleUrl, {"header"=>true})
   expect( validator.isValid ).to.eql(true)
 
-  stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-  const validator = await CsvlintValidator("http://example.com/example.csv", {"header"=>false})
+  stub_request(:get, exampleUrl).to_return(:status => 200, :headers=>{"Content-Type" => "text/csv"}, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
+  const validator = await CsvlintValidator(exampleUrl, {"header"=>false})
   expect( validator.isValid ).to.eql(true)
 })
 
@@ -580,34 +588,34 @@ it("can get line break symbol", () => {
 })
 
 it("should give access to the complete CSV data file", () => {
-  stub_request(:get, "http://example.com/example.csv").to_return(:status => 200,
+  stub_request(:get, exampleUrl).to_return(:status => 200,
 :headers=>{"Content-Type" => "text/csv; header=present"},
 :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-  const validator = await CsvlintValidator("http://example.com/example.csv")
+  const validator = await CsvlintValidator(exampleUrl)
   expect( validator.isValid ).to.eql(true)
   data = validator.data
 
-  expect( data.count ).to.eql 3
+  expect( data.length ).to.eql 3
   expect( data[0] ).to.eql ["Foo","Bar","Baz"]
   expect( data[2] ).to.eql ["3","2","1"]
 })
 
 it("should count the total number of rows read", () => {
-  stub_request(:get, "http://example.com/example.csv").to_return(:status => 200,
+  stub_request(:get, exampleUrl).to_return(:status => 200,
 :headers=>{"Content-Type" => "text/csv; header=present"},
 :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-  const validator = await CsvlintValidator("http://example.com/example.csv")
+  const validator = await CsvlintValidator(exampleUrl)
   expect(validator.row_count).to eq(3)
 })
 
 it("should limit number of lines read", () => {
-  stub_request(:get, "http://example.com/example.csv").to_return(:status => 200,
+  stub_request(:get, exampleUrl).to_return(:status => 200,
 :headers=>{"Content-Type" => "text/csv; header=present"},
 :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","valid.csv")))
-  const validator = await CsvlintValidator("http://example.com/example.csv", {}, null, limit_lines: 2)
+  const validator = await CsvlintValidator(exampleUrl, {}, null, limit_lines: 2)
   expect( validator.isValid ).to.eql(true)
   data = validator.data
-  expect( data.count ).to.eql 2
+  expect( data.length ).to.eql 2
   expect( data[0] ).to.eql ["Foo","Bar","Baz"]
 })
 
