@@ -535,6 +535,16 @@ describe('Csvlint::Validator', () => {
       expect(validator.rowCount).to.eql(3)
     })
 
+    for (const state of ['absent', 'present']) {
+      it(`header=${state} in content-type`, async () => {
+        const validator = await CsvlintValidator(
+          loadFromUrl(exampleUrlPath, { 'Content-Type': `text/csv; header=${state}` })
+        )
+
+        expect(validator.hasHeader).to.eql(state === 'present')
+      })
+    }
+
     it('should limit number of lines read', async () => {
       const validator = await CsvlintValidator(
         loadFromUrl(exampleUrlPath, { 'Content-Type': 'text/csv; header=present' }),
