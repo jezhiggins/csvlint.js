@@ -4,7 +4,7 @@
   "description": "A Node package to support validating CSV files to check their syntax and contents. You can either use this package within your own JavaScript code, or as a standalone command line application.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --recursive",
     "lint": "standard"
   },
   "repository": {
