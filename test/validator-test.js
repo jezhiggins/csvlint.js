@@ -29,7 +29,7 @@ function stubUrl (urlPath = exampleUrlPath, headers = { }) {
     )
 }
 
-function loadFromUrl(urlPath = exampleUrlPath, headers = { }) {
+function loadFromUrl (urlPath = exampleUrlPath, headers = { }) {
   stubUrl(urlPath, headers)
   return `${exampleUrlHost}${urlPath}`
 }
@@ -110,9 +110,9 @@ describe('Csvlint::Validator', () => {
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(false)
-      //expect(validator.errors[0].type).to.eql('stray_quote')
-      //can't exactly replicate csvlint.rb behaviour here -
-      //error is detected, but error code is different
+      // expect(validator.errors[0].type).to.eql('stray_quote')
+      // can't exactly replicate csvlint.rb behaviour here -
+      // error is detected, but error code is different
       expect(validator.errors[0].type).to.eql('unclosedQuote')
       expect(validator.errors.length).to.eql(1)
     })
@@ -122,9 +122,9 @@ describe('Csvlint::Validator', () => {
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(false)
-      //expect(validator.errors[0].type).to.eql('whitespace')
-      //can't exactly replicate csvlint.rb behaviour here -
-      //error is detected, but error code is different
+      // expect(validator.errors[0].type).to.eql('whitespace')
+      // can't exactly replicate csvlint.rb behaviour here -
+      // error is detected, but error code is different
       expect(validator.errors.length).to.eql(2)
       const errorTypes = validator.errors.map(e => e.type)
       expect(errorTypes).to.contain('trailingCharacters')
@@ -144,8 +144,8 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe("csv dialect", () => {
-    it("should provide sensible defaults for CSV parsing", async () => {
+  describe('csv dialect', () => {
+    it('should provide sensible defaults for CSV parsing', async () => {
       const validator = await CsvlintValidator(loadFromUrl())
 
       const opts = validator.csvOptions
@@ -157,7 +157,7 @@ describe('Csvlint::Validator', () => {
       })
     })
 
-    it("should map CSV DDF to correct values", async () => {
+    it('should map CSV DDF to correct values', async () => {
       const validator = await CsvlintValidator(loadFromUrl())
 
       const opts = validator.dialectToCsvOptions({
@@ -166,14 +166,14 @@ describe('Csvlint::Validator', () => {
         quoteChar: '"'
       })
       expect(opts).to.include({
-        col_sep: "\t",
-        row_sep: "\n",
+        col_sep: '\t',
+        row_sep: '\n',
         quote_char: '"',
         skip_blanks: false
       })
     })
 
-    it("`validate` to pass input in streaming fashion", async () => {
+    it('`validate` to pass input in streaming fashion', async () => {
       // warnings are built when validate is used to call all three methods
       const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"3","2","1"'
       const validator = await CsvlintValidator(data)
@@ -185,7 +185,7 @@ describe('Csvlint::Validator', () => {
       expect(validator.infoMessages.length).to.eql(1)
     })
 
-    it("`validate` parses malformed CSV, populates errors, warnings & info_msgs,invokes finish()", async () => {
+    it('`validate` parses malformed CSV, populates errors, warnings & info_msgs,invokes finish()', async () => {
       const data = '"Foo","Bar","Baz"\r\n"1","2","3"\r\n"1","2","3"\r\n"1","two","3"\r\n"3","2",   "1"'
       const validator = await CsvlintValidator(data)
 
@@ -201,7 +201,7 @@ describe('Csvlint::Validator', () => {
     })
 
     it('`validate` passes a valid csv', async () => {
-      const filename = path.join(__dirname, "fixtures", "valid_many_rows.csv")
+      const filename = path.join(__dirname, 'fixtures', 'valid_many_rows.csv')
       const validator = await CsvlintValidator(filename)
 
       expect(validator.isValid).to.eql(true)
@@ -211,15 +211,15 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe("with a single row", async () => {
-    it("validates correctly", async () => {
+  describe('with a single row', async () => {
+    it('validates correctly', async () => {
       const data = '"a","b","c"\r\n'
       const validator = await CsvlintValidator(data, { header: false })
 
       expect(validator.isValid).to.eql(true)
     })
 
-    it("checks for non rfc line breaks", async () => {
+    it('checks for non rfc line breaks', async () => {
       const data = '"a","b","c"\n'
       const validator = await CsvlintValidator(data, { header: false })
 
@@ -228,7 +228,7 @@ describe('Csvlint::Validator', () => {
       expect(validator.infoMessages[0].type).to.eql('nonrfc_line_breaks')
     })
 
-    it("checks for blank rows", async () => {
+    it('checks for blank rows', async () => {
       const data = '"","",\r\n'
       const validator = await CsvlintValidator(data, { header: false })
 
@@ -237,24 +237,24 @@ describe('Csvlint::Validator', () => {
       expect(validator.errors[0].type).to.eql('blank_rows')
     })
 
-    it("returns the content of the string with the error", async () => {
+    it('returns the content of the string with the error', async () => {
       const data = '"","",""\r\n'
       const validator = await CsvlintValidator(data, { header: false })
       expect(validator.errors[0].content).to.eql(data)
     })
 
-    it("should presume a header unless told otherwise", async () => {
-      const data = "1,2,3\r\n"
+    it('should presume a header unless told otherwise', async () => {
+      const data = '1,2,3\r\n'
       const validator = await CsvlintValidator(data)
 
-      expect( validator.isValid ).to.eql(true)
-      expect( validator.infoMessages.length ).to.eql(1)
-      expect( validator.infoMessages[0].type).to.eql('assumed_header')
-      expect( validator.infoMessages[0].category).to.eql('structure')
+      expect(validator.isValid).to.eql(true)
+      expect(validator.infoMessages.length).to.eql(1)
+      expect(validator.infoMessages[0].type).to.eql('assumed_header')
+      expect(validator.infoMessages[0].category).to.eql('structure')
     })
 
     it('should evaluate the row as "row 2" when stipulated', async () => {
-      const data = "1,2,3\r\n"
+      const data = '1,2,3\r\n'
       const validator = await CsvlintValidator(data, { header: false })
 
       expect(validator.isValid).to.eql(true)
@@ -262,18 +262,18 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe("it returns the correct error from ERROR_MATCHES", async () => {
-    it("checks for unclosed quotes", async () => {
+  describe('it returns the correct error from ERROR_MATCHES', async () => {
+    it('checks for unclosed quotes', async () => {
       const data = '"a,"b","c"\n'
       const validator = await CsvlintValidator(data)
       expect(validator.isValid).to.eql(false)
       expect(validator.errors.length).to.eql(1)
-      //expect(validator.errors[0].type).to.eql('unclosed_quote')
+      // expect(validator.errors[0].type).to.eql('unclosed_quote')
       expect(validator.errors[0].type).to.eql('trailingCharacters')
     })
 
     // TODO stray quotes is not covered in any spec in this library
-    it("checks for stray quotes", async () => {
+    it('checks for stray quotes', async () => {
       const data = '"a","b","c" "\r\n'
       const validator = await CsvlintValidator(data)
       expect(validator.isValid).to.eql(false)
@@ -281,17 +281,17 @@ describe('Csvlint::Validator', () => {
       expect(validator.errors[0].type).to.eql('stray_quote')
     })
 
-    it("checks for whitespace", async () => {
+    it('checks for whitespace', async () => {
       const data = ' "a","b","c"\r\n'
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(false)
       expect(validator.errors.length).to.eql(1)
-      //expect(validator.errors[0].type).to.eql('whitespace')
+      // expect(validator.errors[0].type).to.eql('whitespace')
       expect(validator.errors[0].type).to.eql('invalidOpeningQuote')
     })
 
-    it("returns line break errors if incorrectly specified", async () => {
+    it('returns line break errors if incorrectly specified', async () => {
       // TODO the logic for catching this error message is very esoteric
       const data = '"a","b","c"\n'
       const validator = await CsvlintValidator(data, { lineTerminator: '\r\n' })
@@ -301,19 +301,18 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe("when validating headers", () => {
+  describe('when validating headers', () => {
     it("should warn if column names aren't unique", async () => {
-      const data = "minimum,minimum\n"
+      const data = 'minimum,minimum\n'
       const validator = await CsvlintValidator(data)
 
       expect(validator.warnings.length).to.eql(1)
-      expect(validator.warnings[0].type).to.eql
-      ('duplicate_column_name')
-      expect( validator.warnings[0].category).to.eql('schema')
+      expect(validator.warnings[0].type).to.eql('duplicate_column_name')
+      expect(validator.warnings[0].category).to.eql('schema')
     })
 
-    it("should warn if column names are blank", async () => {
-      const data = "minimum,\n"
+    it('should warn if column names are blank', async () => {
+      const data = 'minimum,\n'
       const validator = await CsvlintValidator(data)
 
       expect(validator.warnings.length).to.eql(1)
@@ -321,8 +320,8 @@ describe('Csvlint::Validator', () => {
       expect(validator.warnings[0].category).to.eql('schema')
     })
 
-    it("should include info message about missing header when we have assumed a header", async () => {
-      const data = "1,2,3\r\n"
+    it('should include info message about missing header when we have assumed a header', async () => {
+      const data = '1,2,3\r\n'
       const validator = await CsvlintValidator(data)
 
       expect(validator.isValid).to.eql(true)
@@ -331,8 +330,8 @@ describe('Csvlint::Validator', () => {
       expect(validator.infoMessages[0].category).to.eql('structure')
     })
 
-    it("should not include info message about missing header when we are told about the header", async () => {
-      const data = "1,2,3\r\n"
+    it('should not include info message about missing header when we are told about the header', async () => {
+      const data = '1,2,3\r\n'
       const validator = await CsvlintValidator(data, { header: false })
 
       expect(validator.isValid).to.eql(true)
@@ -345,7 +344,7 @@ describe('Csvlint::Validator', () => {
       expect(validator.isValid).to.eql(true)
     })
 
-    it("should be valid if we have a dialect and the data is from the web", async () => {
+    it('should be valid if we have a dialect and the data is from the web', async () => {
       // header defaults to true in csv dialect, so this is valid
       let validator = await CsvlintValidator(loadFromUrl(), {})
       expect(validator.isValid).to.eql(true)
@@ -358,14 +357,14 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe("build formats", () => {
+  describe('build formats', () => {
     const formats = {
-      string: "foo",
-      numeric: "1",
-      uri: "http://www.example.com",
-      dateTime_iso8601: "2013-01-01T13:00:00Z",
-      date_db: "2013-01-01",
-      dateTime_hms: "13:00:00"
+      string: 'foo',
+      numeric: '1',
+      uri: 'http://www.example.com',
+      dateTime_iso8601: '2013-01-01T13:00:00Z',
+      date_db: '2013-01-01',
+      dateTime_hms: '13:00:00'
     }
 
     for (const [type, content] of Object.entries(formats)) {
@@ -380,18 +379,18 @@ describe('Csvlint::Validator', () => {
       })
     }
 
-    it("treats floats and ints the same", async () => {
-      const row = ["12", "3.1476"]
+    it('treats floats and ints the same', async () => {
+      const row = ['12', '3.1476']
 
       const validator = await CsvlintValidator(loadFromUrl())
       validator.buildFormats(row)
       const formats = validator.formats_
 
-      expect(formats[0].keys[0]).to.eql(numeric)
-      expect(formats[1].keys[0]).to.eql(numeric)
+      expect(formats[0].keys[0]).to.eql('numeric')
+      expect(formats[1].keys[0]).to.eql('numeric')
     })
 
-    it("should ignore blank arrays", async () => {
+    it('should ignore blank arrays', async () => {
       const row = []
 
       const validator = await CsvlintValidator(loadFromUrl())
@@ -401,11 +400,11 @@ describe('Csvlint::Validator', () => {
       expect(formats).to.eql([])
     })
 
-    it("should work correctly for single columns", async () => {
+    it('should work correctly for single columns', async () => {
       const rows = [
-        ["foo"],
-        ["bar"],
-        ["baz"]
+        ['foo'],
+        ['bar'],
+        ['baz']
       ]
       const validator = await CsvlintValidator(loadFromUrl())
       for (const row of rows) {
@@ -413,13 +412,13 @@ describe('Csvlint::Validator', () => {
       }
 
       const formats = validator.formats_
-      expect(formats).to.eql([{string: 3}])
+      expect(formats).to.eql([{ string: 3 }])
     })
 
-    it("should return formats correctly if a row is blank", async () => {
+    it('should return formats correctly if a row is blank', async () => {
       const rows = [
         [],
-        ["foo", "1", "$2345"]
+        ['foo', '1', '$2345']
       ]
       const validator = await CsvlintValidator(loadFromUrl())
       for (const row of rows) {
@@ -429,19 +428,19 @@ describe('Csvlint::Validator', () => {
       const formats = validator.formats_
 
       expect(formats).to.eql([
-        {string: 1},
-        {numeric: 1},
-        {string: 1}
+        { string: 1 },
+        { numeric: 1 },
+        { string: 1 }
       ])
     })
   })
 
-  describe("check consistency", async () => {
-    it("should return a warning if columns have inconsistent values", async () => {
+  describe('check consistency', async () => {
+    it('should return a warning if columns have inconsistent values', async () => {
       const formats = [
         { string: 3 },
         { string: 2, numeric: 1 },
-        { numeric: 3 },
+        { numeric: 3 }
       ]
 
       const validator = await CsvlintValidator(loadFromUrl())
@@ -455,69 +454,68 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe("when detecting headers", () => {
-    it("should default to expecting a header", async () => {
+  describe('when detecting headers', () => {
+    it('should default to expecting a header', async () => {
       const validator = await CsvlintValidator(loadFromUrl())
 
       expect(validator.hasHeader).to.eql(true)
     })
 
-    it("should look in CSV options to detect header", async () => {
+    it('should look in CSV options to detect header', async () => {
       let validator = await CsvlintValidator(loadFromUrl(), { header: true })
 
-      expect( validator.hasHeader).to.eql(true)
+      expect(validator.hasHeader).to.eql(true)
 
       validator = await CsvlintValidator(loadFromUrl(), { header: false })
-      expect( validator.hasHeader).to.eql(false)
+      expect(validator.hasHeader).to.eql(false)
     })
 
-    it("should look in content-type for header=absent", async () => {
-      const validator = await CsvlintValidator(loadFromUrl(exampleUrlPath, { "Content-Type": "text/csv; header=absent" }))
+    it('should look in content-type for header=absent', async () => {
+      const validator = await CsvlintValidator(loadFromUrl(exampleUrlPath, { 'Content-Type': 'text/csv; header=absent' }))
 
       expect(validator.hasHeader).to.eql(false)
       expect(validator.isValid).to.eql(true)
-      expect( validator.infoMessages.length).to.eql(0)
-
+      expect(validator.infoMessages.length).to.eql(0)
     })
 
-    it("should look in content-type for header=present", async () => {
-      const validator = await CsvlintValidator(loadFromUrl(exampleUrlPath, { "Content-Type": "text/csv; header=present" }))
+    it('should look in content-type for header=present', async () => {
+      const validator = await CsvlintValidator(loadFromUrl(exampleUrlPath, { 'Content-Type': 'text/csv; header=present' }))
 
       expect(validator.hasHeader).to.eql(true)
       expect(validator.isValid).to.eql(true)
-      expect( validator.infoMessages.length).to.eql(0)
+      expect(validator.infoMessages.length).to.eql(0)
     })
 
-    it("assume header present if not specified in content type", async () => {
+    it('assume header present if not specified in content type', async () => {
       const validator = await CsvlintValidator(loadFromUrl())
 
-      expect( validator.hasHeader).to.eql(true)
-      expect( validator.isValide).to.eql(true)
-      expect( validator.infoMessages.length).to.eql(1)
-      expect( validator.infoMessages[0].type).to.eql('assumed_header')
+      expect(validator.hasHeader).to.eql(true)
+      expect(validator.isValide).to.eql(true)
+      expect(validator.infoMessages.length).to.eql(1)
+      expect(validator.infoMessages[0].type).to.eql('assumed_header')
     })
 
-    it("give wrong content type error if content type is wrong", async () => {
-      const validator = await CsvlintValidator(loadFromUrl(exampleUrlPath, { "Content-Type": "text/html" }))
+    it('give wrong content type error if content type is wrong', async () => {
+      const validator = await CsvlintValidator(loadFromUrl(exampleUrlPath, { 'Content-Type': 'text/html' }))
 
-      expect( validator.hasHeader).to.eql(true)
-      expect( validator.errors.length).to.eql(1)
-      expect( validator.errors[0].type).to.eql('wrong_content_type')
+      expect(validator.hasHeader).to.eql(true)
+      expect(validator.errors.length).to.eql(1)
+      expect(validator.errors[0].type).to.eql('wrong_content_type')
     })
   })
 
-  describe("accessing metadata", () => {
-    //before :all do
+  describe('accessing metadata', () => {
+    // before :all do
     //  stub_request(:get, "http://example.com/crlf.csv").to_return(:status => 200, :body => File.read(File.join(File.dirname(__FILE__),"..","features","fixtures","windows-line-})ings.csv")))
-    //stub_request(:get, "http://example.com/crlf.csv-metadata.json").to_return(:status => 404)
+    // stub_request(:get, "http://example.com/crlf.csv-metadata.json").to_return(:status => 404)
 
-    it("can get line break symbol", async () => {
+    it('can get line break symbol', async () => {
       const validator = await CsvlintValidator(loadFromUrl('/crlf.csv'))
 
       expect(validator.lineBreaks).to.eql('\r\n')
     })
 
-    it("should give access to the complete CSV data file", async () => {
+    it('should give access to the complete CSV data file', async () => {
       const validator = await CsvlintValidator(
         loadFromUrl(exampleUrlPath, { 'Content-Type': 'text/csv; header=present' })
       )
@@ -525,11 +523,11 @@ describe('Csvlint::Validator', () => {
       expect(validator.isValid).to.eql(true)
       const data = validator.data
       expect(data.length).to.eql(3)
-      expect(data[0]).to.eql(["Foo","Bar","Baz"])
-      expect(data[2]).to.eql(["3","2","1"])
+      expect(data[0]).to.eql(['Foo', 'Bar', 'Baz'])
+      expect(data[2]).to.eql(['3', '2', '1'])
     })
 
-    it("should count the total number of rows read", async () => {
+    it('should count the total number of rows read', async () => {
       const validator = await CsvlintValidator(
         loadFromUrl(exampleUrlPath, { 'Content-Type': 'text/csv; header=present' })
       )
@@ -537,34 +535,34 @@ describe('Csvlint::Validator', () => {
       expect(validator.rowCount).to.eql(3)
     })
 
-    it("should limit number of lines read", async () => {
+    it('should limit number of lines read', async () => {
       const validator = await CsvlintValidator(
         loadFromUrl(exampleUrlPath, { 'Content-Type': 'text/csv; header=present' }),
         {},
         null,
-        { limitLines: 2}
+        { limitLines: 2 }
       )
 
       expect(validator.isValid).to.eql(true)
       const data = validator.data
       expect(data.length).to.eql(2)
-      expect(data[0]).to.eql(["Foo","Bar","Baz"])
+      expect(data[0]).to.eql(['Foo', 'Bar', 'Baz'])
     })
   })
 
-  describe("with a lambda", () => {
-    it("should call a lambda for each line", async () => {
+  describe('with a lambda', () => {
+    it('should call a lambda for each line', async () => {
       let count = 0
       const lambda = row => ++count
-      await CsvlintValidator(path.join(__dirname,"fixtures","valid.csv"), {}, null, { lambda })
+      await CsvlintValidator(path.join(__dirname, 'fixtures', 'valid.csv'), {}, null, { lambda })
 
       expect(count).to.eql(3)
     })
 
-    it("reports back the status of each line", async () => {
+    it('reports back the status of each line', async () => {
       const results = []
       const lambda = (row, currentLine) => results.push(currentLine)
-      await CsvlintValidator(path.join(__dirname,"fixtures","valid.csv"), {}, null, { lambda })
+      await CsvlintValidator(path.join(__dirname, 'fixtures', 'valid.csv'), {}, null, { lambda })
 
       expect(results.length).to.eql(3)
       expect(results[0]).to.eql(1)
