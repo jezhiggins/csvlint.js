@@ -55,9 +55,9 @@ describe('Csvlint::Csvw::Column', () => {
       expect(column.name).to.eql('countryCode')
       expect(column.about_url).to.eql(null)
       expect(column.datatype).to.eql({ '@id': 'http://www.w3.org/2001/XMLSchema#string' })
-      expect(column.default).to.eql('')
+      expect(column.default_value).to.eql('')
       expect(column.lang).to.eql('und')
-      expect(column.null).to.eql([''])
+      expect(column.nulls).to.eql([''])
       expect(column.ordered).to.eql(false)
       expect(column.property_url).to.eql(null)
       expect(column.required).to.eql(false)
@@ -111,7 +111,7 @@ describe('Csvlint::Csvw::Column', () => {
       const column = CsvlintCsvwColumn.fromJson(1, json)
       expect(column.name).to.eql('Id')
       expect(column.required).to.eql(true)
-      expect(column.datatype).to.eqll({ base: 'http://www.w3.org/2001/XMLSchema#string', minLength: 3 })
+      expect(column.datatype).to.eql({ base: 'http://www.w3.org/2001/XMLSchema#string', minLength: 3 })
     })
 
     it('should generate warnings for invalid null values', () => {
