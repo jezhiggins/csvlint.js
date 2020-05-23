@@ -26,6 +26,7 @@
   "dependencies": {
     "csv-parse": "^4.9.0",
     "luxon": "^1.24.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "xregexp": "^4.3.0"
   }
 }
