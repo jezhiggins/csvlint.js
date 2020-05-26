@@ -6,7 +6,7 @@ describe('Csvlint::Csvw::DateFormat', () => {
 
   it('should parse dates that match yyyy-MM-dd correctly', () => {
     const format = CsvlintCsvwDateFormat("yyyy-MM-dd")
-    expect(format.parse("2015-03-22").dateTime).to.eql(Date.new(2015, 2, 22))
+    expect(format.parse("2015-03-22").dateTime).to.eql(new Date(2015, 2, 22))
     expect(format.parse("2015-02-30")).to.eql(null)
     expect(format.parse("22/03/2015")).to.eql(null)
   })
