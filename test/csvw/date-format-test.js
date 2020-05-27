@@ -36,7 +36,7 @@ describe('Csvlint::Csvw::DateFormat', () => {
   it('should parse dateTimes that match yyyy-MM-ddTHH:mm:ss.S correctly', () => {
     const format = CsvlintCsvwDateFormat("yyyy-MM-ddTHH:mm:ss.S")
     expect(format.parse("2015-03-15T15:02:37").dateTime).to.eql(new Date(2015, 2, 15, 15, 2, 37.0))
-    expect(format.parse("2015-03-15T15:02:37.4").dateTime).to.eql(new Date(2015, 2, 15, 15, 2, 37.4))
+    expect(format.parse("2015-03-15T15:02:37.4").dateTime).to.eql(new Date(2015, 2, 15, 15, 2, 37, 400))
     expect(format.parse("2015-03-15T15:02:37.45")).to.eql(null)
     expect(format.parse("12:34:56")).to.eql(null)
     expect(format.parse("22/03/2015")).to.eql(null)
