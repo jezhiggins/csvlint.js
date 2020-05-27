@@ -19,6 +19,7 @@
   "homepage": "https://github.com/jezhiggins/csvlint.js#readme",
   "devDependencies": {
     "chai": "^4.2.0",
+    "dirty-chai": "^2.0.1",
     "mocha": "^7.1.2",
     "nock": "^12.0.3",
     "standard": "^14.3.3"
