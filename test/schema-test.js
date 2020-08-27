@@ -205,7 +205,7 @@ describe('Csvlint::Schema', () => {
     `
     */
     // stub_request(:get, "http://example.com/metadata.json").to_return(:status => 200, :body => @example)
-    xit('should create a table group from a CSVW metadata URL', () => {
+    it('should create a table group from a CSVW metadata URL', () => {
       // const schema = CsvlintSchema.loadFromUri("http://example.com/metadata.json")
       // expect(schema.class).to.eql(Csvlint::Csvw::TableGroup)
     })

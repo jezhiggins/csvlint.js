@@ -150,10 +150,10 @@ describe('Csvlint::Validator', () => {
 
       const opts = validator.csvOptions
       expect(opts).to.include({
-        col_sep: ',',
-        row_sep: 'auto',
-        quote_char: '"',
-        skip_blanks: false
+        colSep: ',',
+        rowSep: 'auto',
+        quoteChar: '"',
+        skipBlanks: false
       })
     })
 
@@ -166,10 +166,10 @@ describe('Csvlint::Validator', () => {
         quoteChar: '"'
       })
       expect(opts).to.include({
-        col_sep: '\t',
-        row_sep: '\n',
-        quote_char: '"',
-        skip_blanks: false
+        colSep: '\t',
+        rowSep: '\n',
+        quoteChar: '"',
+        skipBlanks: false
       })
     })
 
