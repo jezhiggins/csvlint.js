@@ -495,7 +495,7 @@ describe('Csvlint::Validator', () => {
       const validator = await CsvlintValidator(loadFromUrl())
 
       expect(validator.hasHeader).to.eql(true)
-      expect(validator.isValide).to.eql(true)
+      expect(validator.isValid).to.eql(true)
       expect(validator.infoMessages.length).to.eql(1)
       expect(validator.infoMessages[0].type).to.eql('assumed_header')
     })
