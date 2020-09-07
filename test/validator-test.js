@@ -453,7 +453,7 @@ describe('Csvlint::Validator', () => {
       validator.checkConsistency()
 
       const warnings = validator.warnings
-        .filter(w => w.type === 'inconsistent_values')
+        .filter(w => w.type === 'inconsistentValues')
 
       expect(warnings.length).to.eql(1)
     })
