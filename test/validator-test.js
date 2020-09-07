@@ -8,10 +8,12 @@ const CsvlintValidator = require('../lib/csvlint/validator')
 
 const exampleUrlHost = 'http://example.com'
 const exampleUrlPath = '/example.csv'
+const emptyUrlPath = '/empty.csv'
 
 function stubUrl (urlPath = exampleUrlPath, headers = { }) {
   const files = {
     [exampleUrlPath]: 'valid.csv',
+    [emptyUrlPath]: 'empty.csv',
     '/crlf.csv': 'windows-line-endings.csv'
   }
   const file = files[urlPath]
@@ -360,7 +362,7 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe('build formats', () => {
+  describe('DO NOW! build formats', () => {
     const formats = {
       string: 'foo',
       numeric: '1',
@@ -374,29 +376,29 @@ describe('Csvlint::Validator', () => {
       it(`should return the format of ${type} correctly`, async () => {
         const row = [content]
 
-        const validator = await CsvlintValidator(loadFromUrl())
+        const validator = await CsvlintValidator(loadFromUrl(emptyUrlPath))
         validator.buildFormats(row)
-        const formats = validator.formats_
+        const format = validator.formats_[0]
 
-        expect(formats[0].keys[0]).to.eql(type)
+        expect(Object.keys(format)[0]).to.eql(type)
       })
     }
 
     it('treats floats and ints the same', async () => {
       const row = ['12', '3.1476']
 
-      const validator = await CsvlintValidator(loadFromUrl())
+      const validator = await CsvlintValidator(loadFromUrl(emptyUrlPath))
       validator.buildFormats(row)
       const formats = validator.formats_
 
-      expect(formats[0].keys[0]).to.eql('numeric')
-      expect(formats[1].keys[0]).to.eql('numeric')
+      expect(Object.keys(formats[0])[0]).to.eql('numeric')
+      expect(Object.keys(formats[1])[0]).to.eql('numeric')
     })
 
     it('should ignore blank arrays', async () => {
       const row = []
 
-      const validator = await CsvlintValidator(loadFromUrl())
+      const validator = await CsvlintValidator(loadFromUrl(emptyUrlPath))
       validator.buildFormats(row)
       const formats = validator.formats_
 
@@ -409,7 +411,7 @@ describe('Csvlint::Validator', () => {
         ['bar'],
         ['baz']
       ]
-      const validator = await CsvlintValidator(loadFromUrl())
+      const validator = await CsvlintValidator(loadFromUrl(emptyUrlPath))
       for (const row of rows) {
         validator.buildFormats(row)
       }
@@ -423,7 +425,7 @@ describe('Csvlint::Validator', () => {
         [],
         ['foo', '1', '$2345']
       ]
-      const validator = await CsvlintValidator(loadFromUrl())
+      const validator = await CsvlintValidator(loadFromUrl(emptyUrlPath))
       for (const row of rows) {
         validator.buildFormats(row)
       }
