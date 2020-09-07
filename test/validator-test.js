@@ -197,7 +197,7 @@ describe('Csvlint::Validator', () => {
       expect(validator.errors.length).to.eql(1)
       expect(validator.errors[0].type).to.eql('invalidOpeningQuote') // .rb has whitespace
       expect(validator.warnings.length).to.eql(1)
-      expect(validator.warnings[0].type).to.eql('inconsistent_values')
+      expect(validator.warnings[0].type).to.eql('inconsistentValues')
     })
 
     it('`validate` passes a valid csv', async () => {
@@ -262,7 +262,7 @@ describe('Csvlint::Validator', () => {
     })
   })
 
-  describe('it returns the correct error from ERROR_MATCHES', async () => {
+  describe('it returns the correct error from ERROR_MATCHES (mechanism has changed for JS - not translating exceptions)', async () => {
     it('checks for unclosed quotes', async () => {
       const data = '"a,"b","c"\n'
       const validator = await CsvlintValidator(data)
